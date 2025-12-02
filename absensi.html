@@ -93,7 +93,7 @@
 
   <script>
     // ---------- KONFIG ----------
-    const API_URL = "https://script.google.com/macros/s/AKfycbwGF1LyRoHF2wBiV22dnGTrtIqCmXdVSncK0Ni3MJInDuDP9ml_6w87Iw4csh6JvT4G/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzjrz-QRcqWa7OB2xY_V3OshwngI-zkQDQhH1JGqLJA4eThvp9-Chh5wGEOIVdy8URU/exec";
     // ganti di atas kalau URL deploymu beda
 
     // ---------- DOM ----------
@@ -204,18 +204,36 @@
     }
     startCamera();
 
-    snapBtn.addEventListener("click", () => {
-      if (!localStream) return alert("Kamera belum aktif.");
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-      photoPreview.src = dataUrl;
-      photoPreviewWrap.classList.remove("hidden");
-      lastSnapshot = dataUrl;
-    });
+   snapBtn.addEventListener("click", () => {
+  if (!localStream) return alert("Kamera belum aktif.");
+  if (!employeeName.value) return alert("Pilih nama dulu!");
+
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+  lastSnapshot = dataUrl;
+
+  // ✅ TAMPILKAN PREVIEW FOTO
+  photoPreview.src = dataUrl;
+  photoPreviewWrap.classList.remove("hidden");
+
+  // ✅ LANGSUNG TAMPILKAN PREVIEW DATA
+  const now = new Date();
+  const status = evaluateStatus(now);
+
+  infoName.textContent = employeeName.value;
+  infoTime.textContent = now.toLocaleString("id-ID");
+  infoStatus.textContent = status;
+  infoStatus.className = status === "Hadir"
+    ? "text-green-600 font-semibold"
+    : "text-red-600 font-semibold";
+  infoImg.src = dataUrl;
+});
+
 
     resetBtn.addEventListener("click", () => {
       employeeName.value = "";
