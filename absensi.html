@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Absensi Kehadiran</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -21,9 +21,7 @@
         </div>
       </div>
       <div class="flex gap-2">
-        <a href="login.html" class="px-4 py-2 rounded-lg bg-yellow-500 text-white font-semibold shadow hover:bg-yellow-600">
-          Halaman Admin
-        </a>
+        <a href="login.html" class="px-4 py-2 rounded-lg bg-yellow-500 text-white font-semibold shadow hover:bg-yellow-600">Halaman Admin</a>
         <label class="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold shadow hover:bg-blue-600 cursor-pointer">
           Upload Pegawai
           <input type="file" id="uploadPegawai" accept=".csv,.json" class="hidden" />
@@ -33,13 +31,11 @@
 
     <!-- Panel Absensi -->
     <div class="relative shadow rounded-xl overflow-hidden">
-      <!-- Background gambar -->
       <div class="absolute inset-0">
         <img src="imigrasi.jpg" class="w-full h-full object-cover" />
         <div class="absolute inset-0 bg-white/10"></div>
       </div>
 
-      <!-- Konten -->
       <div class="relative p-6">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Form kiri -->
@@ -62,14 +58,12 @@
               <label class="block text-sm font-medium text-gray-700">Webcam (Preview)</label>
               <video id="video" autoplay playsinline class="w-full rounded-lg bg-black"></video>
 
-              <!-- Tombol Ambil Foto & Reset -->
               <div class="flex mt-2 gap-2">
                 <button id="snapBtn" class="flex-1 bg-blue-600 text-white rounded-lg px-3 py-2">Ambil Foto</button>
                 <button id="resetBtn" class="flex-1 bg-gray-500 text-white rounded-lg px-3 py-2">Reset</button>
               </div>
             </div>
 
-            <!-- ✅ Pesan sukses -->
             <div id="successMsg" class="hidden mt-4 p-3 bg-green-100 text-green-700 rounded border border-green-300"></div>
           </div>
 
@@ -77,14 +71,13 @@
           <div class="space-y-4">
             <div class="bg-gray-50/90 p-4 rounded-lg shadow">
               <h3 class="font-semibold text-gray-700">Informasi Absensi</h3>
-              <p class="text-sm text-gray-500">Data tersimpan di browser, bisa dilihat di Admin.</p>
+              <p class="text-sm text-gray-500">Data dikirim ke Google Sheets (server).</p>
               <hr class="my-2" />
               <p><strong>Nama:</strong> <span id="infoName">-</span></p>
               <p><strong>Waktu:</strong> <span id="infoTime">-</span></p>
               <p><strong>Status:</strong> <span id="infoStatus">-</span></p>
-              <img id="infoImg" class="mt-2 w-12 h-12 rounded-lg object-cover" />
+              <img id="infoImg" class="mt-2 w-24 h-24 rounded-lg object-cover border" />
 
-              <!-- ✅ Preview dipindah ke bawah info -->
               <div id="photoPreviewWrap" class="hidden mt-4">
                 <label class="block text-sm text-gray-700">Preview Foto</label>
                 <img id="photoPreview" class="w-full rounded-lg" />
@@ -92,19 +85,21 @@
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>
   </div>
 
   <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzbThJ7c9GKsR-myYbRABFoR9kWuEul6JqySnR0IWzed52ihrsL2152E54l-mO3sTGg/exec";
+    // ---------- KONFIG ----------
+    const API_URL = "https://script.google.com/macros/s/AKfycbzbThJ7c9GKsR-myYbRABFoR9kWuEul6JqySnR0IWzed52ihrsL2152E54l-mO3sTGg/exec";
+    // ganti di atas kalau URL deploymu beda
 
-
+    // ---------- DOM ----------
     const searchPegawai = document.getElementById("searchPegawai");
     const employeeName = document.getElementById("employeeName");
     const uploadPegawai = document.getElementById("uploadPegawai");
-
     const nowDisplay = document.getElementById("nowDisplay");
     const video = document.getElementById("video");
     const snapBtn = document.getElementById("snapBtn");
@@ -114,35 +109,31 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzbThJ7c9GKsR-myYbRABFo
     const photoPreview = document.getElementById("photoPreview");
     const photoPreviewWrap = document.getElementById("photoPreviewWrap");
     const successMsg = document.getElementById("successMsg");
-
     const infoName = document.getElementById("infoName");
     const infoTime = document.getElementById("infoTime");
     const infoStatus = document.getElementById("infoStatus");
     const infoImg = document.getElementById("infoImg");
 
-    let daftarPegawai = [
-  "Budi Santoso",
-  "Ani Lestari",
-  "Rudi Hartono",
-  "Siti Aminah"
-];
-
+    // ---------- STATE ----------
+    let daftarPegawai = ["Budi Santoso","Ani Lestari","Rudi Hartono","Siti Aminah"];
     let localStream = null;
     let lastSnapshot = null;
 
-    // ✅ Coba ambil daftar pegawai dari file pegawai.json
-    fetch("pegawai.json")
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data.pegawai)) {
-          daftarPegawai = data.pegawai;
-          localStorage.setItem("daftarPegawai", JSON.stringify(daftarPegawai));
-          renderPegawai();
-        }
-      })
-      .catch(err => console.warn("pegawai.json tidak ditemukan, pakai default/localStorage"));
+    // ---------- UTILS ----------
+    function updateClock() {
+      const now = new Date();
+      nowDisplay.value = now.toLocaleDateString("id-ID") + " " + now.toLocaleTimeString("id-ID");
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-    // ✅ Render daftar pegawai ke dropdown
+    function evaluateStatus(date) {
+      const hh = date.getHours();
+      // hadir sebelum 08:00
+      if (hh < 8) return "Hadir";
+      return "Terlambat";
+    }
+
     function renderPegawai(filter = "") {
       employeeName.innerHTML = `<option value="">-- Pilih Pegawai --</option>`;
       daftarPegawai
@@ -154,21 +145,28 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzbThJ7c9GKsR-myYbRABFo
           employeeName.appendChild(opt);
         });
     }
+
+    // ---------- INIT: coba load pegawai dari file ----------
+    fetch("pegawai.json")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data.pegawai)) {
+          daftarPegawai = data.pegawai;
+          renderPegawai();
+        }
+      })
+      .catch(()=>{/* ignore jika tidak ada file */});
+
     renderPegawai();
 
-    // ✅ Filter nama pegawai saat ketik
+    // ---------- filter input ----------
     searchPegawai.addEventListener("input", e => {
-      const filter = e.target.value;
-      renderPegawai(filter);
+      renderPegawai(e.target.value);
       const options = employeeName.querySelectorAll("option");
-      if (options.length === 2) {
-        employeeName.value = options[1].value;
-      } else {
-        employeeName.value = "";
-      }
+      if (options.length === 2) employeeName.value = options[1].value;
     });
 
-    // ✅ Upload CSV/JSON untuk daftar pegawai
+    // ---------- upload pegawai ----------
     uploadPegawai.addEventListener("change", e => {
       const file = e.target.files[0];
       if (!file) return;
@@ -183,6 +181,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzbThJ7c9GKsR-myYbRABFo
           }
           if (Array.isArray(data)) {
             daftarPegawai = data;
+            renderPegawai();
             alert("Daftar pegawai berhasil diperbarui!");
           } else {
             alert("Format file tidak valid!");
@@ -194,14 +193,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzbThJ7c9GKsR-myYbRABFo
       reader.readAsText(file);
     });
 
-function updateClock() {
-  const now = new Date();
-  nowDisplay.value = now.toLocaleDateString("id-ID") + " " + now.toLocaleTimeString("id-ID");
-}
-setInterval(updateClock, 1000);
-window.addEventListener("DOMContentLoaded", updateClock);
-
-    // 🎥 Start kamera
+    // ---------- kamera ----------
     async function startCamera() {
       try {
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
@@ -212,11 +204,8 @@ window.addEventListener("DOMContentLoaded", updateClock);
     }
     startCamera();
 
-    snapBtn.onclick = () => {
-      if (!localStream) {
-        alert("Kamera belum aktif.");
-        return;
-      }
+    snapBtn.addEventListener("click", () => {
+      if (!localStream) return alert("Kamera belum aktif.");
       const canvas = document.createElement("canvas");
       canvas.width = video.videoWidth || 640;
       canvas.height = video.videoHeight || 480;
@@ -226,9 +215,9 @@ window.addEventListener("DOMContentLoaded", updateClock);
       photoPreview.src = dataUrl;
       photoPreviewWrap.classList.remove("hidden");
       lastSnapshot = dataUrl;
-    };
+    });
 
-    resetBtn.onclick = () => {
+    resetBtn.addEventListener("click", () => {
       employeeName.value = "";
       searchPegawai.value = "";
       renderPegawai();
@@ -236,91 +225,63 @@ window.addEventListener("DOMContentLoaded", updateClock);
       photoPreviewWrap.classList.add("hidden");
       photoPreview.src = "";
       successMsg.classList.add("hidden");
-    };
-
-function evaluateStatus(date) {
-  const hh = date.getHours();
-  const mm = date.getMinutes();
-
-  // Hadir: sebelum 08:00
-  if (hh < 8) return "Hadir";
-
-  return "Terlambat";
-}
-
-confirmBtn.onclick = async () => {
-  const name = employeeName.value.trim();
-  if (!name) return alert("Pilih nama pegawai!");
-  if (!lastSnapshot) return alert("Ambil foto dulu!");
-
-  const now = new Date();
-  const payload = {
-    id: Date.now(),
-    nama: name,
-    tanggal: now.toISOString().slice(0, 10),
-    waktu: now.toLocaleTimeString("id-ID"),
-    status: evaluateStatus(now)
-  };
-
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
     });
 
-    const result = await res.json();
+    // ---------- konfirmasi (kirim ke Apps Script) ----------
+    confirmBtn.addEventListener("click", async () => {
+      const name = employeeName.value.trim();
+      if (!name) return alert("Pilih nama pegawai!");
+      if (!lastSnapshot) return alert("Ambil foto dulu!");
 
-    if (!result.success) {
-      throw new Error(result.error || "Respon server tidak valid");
-    }
+      const now = new Date();
+      const payload = {
+        id: Date.now(),
+        nama: name,
+        tanggal: now.toISOString().slice(0, 10),
+        waktu: now.toLocaleTimeString("id-ID"),
+        status: evaluateStatus(now),
+        // foto: lastSnapshot   // <-- uncomment kalau Apps Script siap simpan base64 (opsional)
+      };
 
-    infoName.textContent = name;
-    infoTime.textContent = now.toLocaleString("id-ID");
-    infoStatus.textContent = payload.status;
-    infoImg.src = lastSnapshot;
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
 
-    successMsg.textContent = "Absensi berhasil disimpan!";
-    successMsg.classList.remove("hidden");
+        if (!res.ok) {
+          const txt = await res.text().catch(()=>"(no body)");
+          throw new Error(`HTTP ${res.status} - ${txt}`);
+        }
 
-    lastSnapshot = null;
-    photoPreviewWrap.classList.add("hidden");
+        const result = await res.json().catch(()=>null);
+        // beberapa Apps Script mengembalikan plain text; terima juga []
+        if (result && result.success === false) {
+          throw new Error(result.error || "Server menolak menyimpan data");
+        }
 
-  } catch (err) {
-    alert("Gagal mengirim ke server: " + err.message);
-  }
-};
+        // update UI kanan
+        infoName.textContent = name;
+        infoTime.textContent = now.toLocaleString("id-ID");
+        infoStatus.textContent = payload.status;
+        infoStatus.className = payload.status === "Hadir" ? "text-green-600 font-semibold" : "text-red-600 font-semibold";
+        infoImg.src = lastSnapshot;
 
-  try {
-  
-    const result = await res.json();
-    if (!result.success) throw new Error(result.error);
+        successMsg.textContent = `Absensi berhasil pada ${now.toLocaleTimeString("id-ID")}`;
+        successMsg.classList.remove("hidden");
+        setTimeout(()=> successMsg.classList.add("hidden"), 4000);
 
-    // ✅ UPDATE INFO KANAN
-    infoName.textContent = name;
-    infoTime.textContent = now.toLocaleString("id-ID");
-    infoStatus.textContent = status;
-    infoImg.src = lastSnapshot;
+        // reset preview
+        lastSnapshot = null;
+        photoPreviewWrap.classList.add("hidden");
+        photoPreview.src = "";
 
-    infoStatus.className =
-      status === "Hadir"
-        ? "text-green-600 font-semibold"
-        : "text-red-600 font-semibold";
-
-    successMsg.textContent = `Absensi berhasil pada ${waktu}`;
-    successMsg.classList.remove("hidden");
-
-    setTimeout(() => successMsg.classList.add("hidden"), 5000);
-
-    // reset
-    lastSnapshot = null;
-    photoPreviewWrap.classList.add("hidden");
-    photoPreview.src = "";
-
-  } catch (err) {
-    alert("Gagal mengirim ke server: " + err.message);
-  }
-};
+      } catch (err) {
+        console.error("KIRIM ERROR:", err);
+        alert("Gagal mengirim ke server: " + err.message);
+      }
+    });
 
     window.addEventListener("beforeunload", () => {
       if (localStream) localStream.getTracks().forEach(t => t.stop());
