@@ -98,6 +98,9 @@
   </div>
 
   <script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzbThJ7c9GKsR-myYbRABFoR9kWuEul6JqySnR0IWzed52ihrsL2152E54l-mO3sTGg/exec";
+
+
     const searchPegawai = document.getElementById("searchPegawai");
     const employeeName = document.getElementById("employeeName");
     const uploadPegawai = document.getElementById("uploadPegawai");
@@ -245,24 +248,18 @@ function evaluateStatus(date) {
   return "Terlambat";
 }
 
- confirmBtn.onclick = async () => {
+confirmBtn.onclick = async () => {
   const name = employeeName.value.trim();
   if (!name) return alert("Pilih nama pegawai!");
   if (!lastSnapshot) return alert("Ambil foto dulu!");
 
   const now = new Date();
-  const tanggal = now.toISOString().slice(0, 10);
-  const waktu = now.toLocaleTimeString("id-ID");
-  const status = evaluateStatus(now);
-
-  if (!confirm("Yakin ingin menyimpan absensi?")) return;
-
   const payload = {
     id: Date.now(),
     nama: name,
-    tanggal: tanggal,
-    waktu: waktu,
-    status: status
+    tanggal: now.toISOString().slice(0, 10),
+    waktu: now.toLocaleTimeString("id-ID"),
+    status: evaluateStatus(now)
   };
 
   try {
@@ -272,6 +269,30 @@ function evaluateStatus(date) {
       body: JSON.stringify(payload)
     });
 
+    const result = await res.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Respon server tidak valid");
+    }
+
+    infoName.textContent = name;
+    infoTime.textContent = now.toLocaleString("id-ID");
+    infoStatus.textContent = payload.status;
+    infoImg.src = lastSnapshot;
+
+    successMsg.textContent = "Absensi berhasil disimpan!";
+    successMsg.classList.remove("hidden");
+
+    lastSnapshot = null;
+    photoPreviewWrap.classList.add("hidden");
+
+  } catch (err) {
+    alert("Gagal mengirim ke server: " + err.message);
+  }
+};
+
+  try {
+  
     const result = await res.json();
     if (!result.success) throw new Error(result.error);
 
@@ -304,9 +325,6 @@ function evaluateStatus(date) {
     window.addEventListener("beforeunload", () => {
       if (localStream) localStream.getTracks().forEach(t => t.stop());
     });
-
-const API_URL = "https://script.google.com/macros/s/AKfycbweZ6zlWyCNY_wHkdPhbP80138CADQglatV9GS684snF5ICydJf8eIUOlUNB7Mc9_7O/exec";
-
   </script>
 </body>
 </html>
