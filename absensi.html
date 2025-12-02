@@ -93,7 +93,7 @@
 
   <script>
     // ---------- KONFIG ----------
-    const API_URL = "https://script.google.com/macros/s/AKfycbzjrz-QRcqWa7OB2xY_V3OshwngI-zkQDQhH1JGqLJA4eThvp9-Chh5wGEOIVdy8URU/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxNfiHHMQ_taEm16P1AmyrGbj7PUa9memchAG44YnnCAOYTBsSL0petWT_jUBnpDxKx/exec";
     // ganti di atas kalau URL deploymu beda
 
     // ---------- DOM ----------
@@ -204,7 +204,7 @@
     }
     startCamera();
 
-   snapBtn.addEventListener("click", () => {
+ snapBtn.addEventListener("click", () => {
   if (!localStream) return alert("Kamera belum aktif.");
   if (!employeeName.value) return alert("Pilih nama dulu!");
 
@@ -218,30 +218,22 @@
   lastSnapshot = dataUrl;
 
   const now = new Date();
-infoName.textContent = employeeName.value || "-";
-infoTime.textContent = now.toLocaleString("id-ID");
-infoStatus.textContent = evaluateStatus(now);
-infoStatus.className =
-  evaluateStatus(now) === "Hadir"
-    ? "text-green-600 font-semibold"
-    : "text-red-600 font-semibold";
+  const status = evaluateStatus(now); // ✅ STATUS DIDEFINISIKAN
 
-infoImg.src = dataUrl;
-
+  // ✅ TAMPILKAN PREVIEW KANAN
+  infoName.textContent = employeeName.value;
+  infoTime.textContent = now.toLocaleString("id-ID");
+  infoStatus.textContent = status;
+  infoStatus.className =
+    status === "Hadir"
+      ? "text-green-600 font-semibold"
+      : "text-red-600 font-semibold";
+  infoImg.src = dataUrl;
 
   // ✅ TAMPILKAN PREVIEW FOTO
   photoPreview.src = dataUrl;
   photoPreviewWrap.classList.remove("hidden");
-
-  infoName.textContent = employeeName.value;
-  infoTime.textContent = now.toLocaleString("id-ID");
-  infoStatus.textContent = status;
-  infoStatus.className = status === "Hadir"
-    ? "text-green-600 font-semibold"
-    : "text-red-600 font-semibold";
-  infoImg.src = dataUrl;
 });
-
 
     resetBtn.addEventListener("click", () => {
       employeeName.value = "";
@@ -282,17 +274,17 @@ const res = await fetch(API_URL, {
   body: formData
 });
 
-
         if (!res.ok) {
           const txt = await res.text().catch(()=>"(no body)");
           throw new Error(`HTTP ${res.status} - ${txt}`);
         }
 
-        const result = await res.json().catch(()=>null);
+        const result = await res.text();
+        console.log("RESPON SERVER:", result);
         // beberapa Apps Script mengembalikan plain text; terima juga []
-        if (result && result.success === false) {
-          throw new Error(result.error || "Server menolak menyimpan data");
-        }
+        if (!result.includes("success")) {
+        console.warn("Server reply:", result);
+         }
 
         // update UI kanan
         infoName.textContent = name;
