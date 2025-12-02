@@ -118,6 +118,9 @@
 
     let localStream = null;
     let lastSnapshot = null;
+    let daftarPegawai = ["Budi Santoso", "Ani Lestari", "Rudi Hartono", "Siti Aminah"];
+
+
 
     // ✅ Coba ambil daftar pegawai dari file pegawai.json
     fetch("pegawai.json")
@@ -226,15 +229,16 @@
       photoPreview.src = "";
       successMsg.classList.add("hidden");
     };
+    
+function updateClock() {
+  const now = new Date();
+  nowDisplay.value = now.toLocaleDateString("id-ID") + " " + now.toLocaleTimeString("id-ID");
+}
+setInterval(updateClock, 1000);
+window.addEventListener("DOMContentLoaded", updateClock);
 
-    function evaluateStatus(date) {
-      const hh = date.getHours();
-      const mm = date.getMinutes();
-      if (hh < 8 || (hh === 7 && mm <= 59)) return "Hadir";
-      return "Terlambat";
-    }
 
-  confirmBtn.onclick = async () => {
+ confirmBtn.onclick = async () => {
   const name = employeeName.value.trim();
   if (!name) return alert("Pilih nama pegawai!");
   if (!lastSnapshot) return alert("Ambil foto dulu!");
@@ -264,17 +268,23 @@
     const result = await res.json();
     if (!result.success) throw new Error(result.error);
 
+    // ✅ UPDATE INFO KANAN
     infoName.textContent = name;
     infoTime.textContent = now.toLocaleString("id-ID");
     infoStatus.textContent = status;
+    infoImg.src = lastSnapshot;
+
     infoStatus.className =
-      status === "Hadir" ? "text-green-600 font-semibold" : "text-red-600 font-semibold";
+      status === "Hadir"
+        ? "text-green-600 font-semibold"
+        : "text-red-600 font-semibold";
 
     successMsg.textContent = `Absensi berhasil pada ${waktu}`;
     successMsg.classList.remove("hidden");
 
     setTimeout(() => successMsg.classList.add("hidden"), 5000);
 
+    // reset
     lastSnapshot = null;
     photoPreviewWrap.classList.add("hidden");
     photoPreview.src = "";
