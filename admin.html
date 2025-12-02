@@ -221,15 +221,20 @@ async function ambilAbsensi() {
     }
 
     // Normalisasi ke format internal yang dipakai UI:
- window.absensiData = rows.map(item => ({
-  id: item[0] || "",
-  name: item[1] || "",
-  date: item[2] || "",
-  time: item[3] || "",
-  status: item[4] || "",
-  photo: item[5] || "",
-  timestamp: item[2] && item[3] ? `${item[2]}T${item[3]}` : ""
+window.absensiData = rows.map(item => ({
+  id: item.id || item[0] || "",
+  name: item.nama || item.name || item[1] || "",
+  date: item.tanggal || item.date || item[2] || "",
+  time: item.waktu || item.time || item[3] || "",
+  status: item.status || item[4] || "",
+  photo: item.foto || item.photo || item[5] || "",
+  timestamp: (item.tanggal && item.waktu)
+              ? `${item.tanggal}T${item.waktu}`
+              : (item.date && item.time)
+                ? `${item.date}T${item.time}`
+                : ""
 }));
+
 
 
     return window.absensiData;
