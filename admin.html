@@ -151,6 +151,8 @@
   </div>
 
 <script>
+console.log("ADMIN JS LOADED ✅");
+alert("ADMIN JS LOADED ✅");
 
 
 /* ----------- Konfigurasi ----------- */
@@ -187,8 +189,11 @@ function formatTimeFromTimestamp(ts) {
   } catch(e) { return ts || ""; }
 }
 
+console.log("MAU AMBIL DATA...");
+
 /* ----------- API: Ambil & Simpan ----------- */
 async function ambilAbsensi() {
+  console.log("ambilAbsensi() DIPANGGIL ✅");
   try {
     const res = await fetch(API_URL);
     const result = await res.json();
@@ -495,6 +500,7 @@ function escapeAttr(s) {
 
 /* ----------- Init application (async safe) ----------- */
 async function initApp() {
+  console.log("INIT APP DIJALANKAN ✅");
   // simple auth-check (as in original)
   if (sessionStorage.getItem("isAdmin") !== "true") {
     window.location.href = "login.html";
