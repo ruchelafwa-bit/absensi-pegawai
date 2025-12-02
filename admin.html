@@ -154,7 +154,7 @@
 
 
 /* ----------- Konfigurasi ----------- */
-const API_URL = "https://script.google.com/macros/s/AKfycbzCRY6WgfvDsn0l5nD-SQdje1cJ_kSXjWWQ_T3o7y1qho_36rgt9RIxrcrY1ZqDEbih/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxdl1WjqHh3EBOqSkc-DtE8X2AXRC-PXqBngAnbkU0Srv2_8dT6adKJgHr2YYX-OuXN/exec";
 
 /* ----------- Elemen DOM ----------- */
 const absensiTable = document.getElementById("absensiTable");
@@ -221,14 +221,16 @@ async function ambilAbsensi() {
     }
 
     // Normalisasi ke format internal yang dipakai UI:
-    window.absensiData = rows.map(item => ({
-      id: item.id ?? (new Date().getTime()),
-      name: item.nama ?? item.name ?? "",
-      date: item.tanggal ?? item.date ?? "",
-      time: item.waktu ?? item.time ?? "",
-      timestamp: item.timestamp ?? ( (item.tanggal && item.waktu) ? `${item.tanggal}T${item.waktu}` : item.timestamp ?? "" ),
-      status: item.status ?? "",
-    }));
+ window.absensiData = rows.map(item => ({
+  id: item[0] || "",
+  name: item[1] || "",
+  date: item[2] || "",
+  time: item[3] || "",
+  status: item[4] || "",
+  photo: item[5] || "",
+  timestamp: item[2] && item[3] ? `${item[2]}T${item[3]}` : ""
+}));
+
 
     return window.absensiData;
   } catch (err) {
@@ -247,8 +249,7 @@ async function simpanAbsensi(record) {
         nama: record.name,
         tanggal: record.date,
         waktu: record.time,
-        status: record.status,
-        photo: record.photo || ""
+        status: record.status || ""
       })
     });
 
