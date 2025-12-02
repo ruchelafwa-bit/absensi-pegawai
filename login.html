@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-cover bg-center min-h-screen flex items-center justify-center" style="background-image: url('imigrasi.jpg');">
+  <div class="bg-white/90 shadow-xl rounded-xl p-8 w-full max-w-md">
+    <!-- Logo + Title -->
+    <div class="flex flex-col items-center mb-6">
+      <img src="logouptimi.png" class="h-28 w-28 object-contain rounded mb-3" alt="Logo" />
+      <h1 class="text-2xl font-bold text-blue-900">Login Admin</h1>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Username</label>
+        <input id="username" type="text" class="mt-1 w-full border rounded-lg p-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Password</label>
+        <input id="password" type="password" class="mt-1 w-full border rounded-lg p-2" />
+      </div>
+      <button id="loginBtn" class="w-full bg-blue-800 text-white py-2 rounded-lg hover:bg-blue-900">Login</button>
+      <a href="absensi.html" class="block text-center text-sm text-gray-600 hover:underline">← Kembali ke Absensi</a>
+    </div>
+
+    <p id="errorMsg" class="hidden mt-4 text-red-600 text-sm"></p>
+  </div>
+
+
+  <script>
+    const STORAGE_KEY = "admin_credentials";
+    const loginBtn = document.getElementById("loginBtn");
+    const errorMsg = document.getElementById("errorMsg");
+
+    // Default admin
+    if (!localStorage.getItem(STORAGE_KEY)) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ username: "admin", password: "admin123" }));
+    }
+
+    loginBtn.onclick = () => {
+      const u = document.getElementById("username").value.trim();
+      const p = document.getElementById("password").value.trim();
+      const creds = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+      if (u === creds.username && p === creds.password) {
+        sessionStorage.setItem("isAdmin", "true");
+        window.location.href = "admin.html";
+      } else {
+        errorMsg.textContent = "Username atau password salah!";
+        errorMsg.classList.remove("hidden");
+      }
+    };
+  </script>
+</body>
+</html>
