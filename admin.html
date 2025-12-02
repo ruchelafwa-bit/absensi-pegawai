@@ -154,7 +154,7 @@
   console.log("ADMIN JS LOADED ✅");
 
   /* ----------- Konfigurasi ----------- */
-  const API_URL = "https://script.google.com/macros/s/AKfycbw7ddJr_nlaVZihHbrpwHIErScCrGY6FKTAtxJ_yW-1a8nlHv_2l6BCh8U0IhcyFbiF/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbxNfiHHMQ_taEm16P1AmyrGbj7PUa9memchAG44YnnCAOYTBsSL0petWT_jUBnpDxKx/exec";
 
   /* ----------- Elemen DOM ----------- */
   const absensiTable = document.getElementById("absensiTable");
@@ -178,41 +178,68 @@
   let filteredData = [];    // data setelah filter (digunakan utk render)
 
   /* ----------- Helper ----------- */
-  function getToday() {
-    return new Date().toISOString().slice(0,10);
+ /* ----------- Helper ----------- */
+function getToday() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`; // lokal, bukan UTC
+}
+
+// FIX waktu dari "14.44.38" → "14:44:38"
+function normalizeTime(timeStr) {
+  if (!timeStr) return "-";
+  return timeStr.replaceAll(".", ":");
+}
+
+// Anti UTC Shift
+function normalizeDate(dateStr) {
+  if (!dateStr) return "";
+  return dateStr.split("T")[0]; // ambil yyyy-mm-dd saja
+}
+
+function formatTimeFromTimestamp(ts) {
+  try {
+    return new Date(ts).toLocaleTimeString("id-ID");
+  } catch (e) {
+    return ts || "";
   }
-  function formatTimeFromTimestamp(ts) {
-    try {
-      return new Date(ts).toLocaleTimeString("id-ID");
-    } catch(e) { return ts || ""; }
-  }
+}
 
   /* ----------- API: Ambil & Simpan ----------- */
   async function ambilAbsensi() {
   try {
-    const res = await fetch(API_URL);
-    const json = await res.json();   // { success, data }
+    console.log("Mulai fetch ke API…");
+
+    const res = await fetch(API_URL, {
+      method: "GET",
+      mode: "cors",
+      cache: "no-store"
+    });
+
+    console.log("HTTP Status:", res.status);
+
+    const text = await res.text();
+    console.log("RAW:", text);
+
+    const json = JSON.parse(text);
 
     if (!json.success || !Array.isArray(json.data)) {
-      throw new Error("Format API salah!");
+      throw new Error("Format API tidak valid");
     }
 
-    window.absensiData = json.data.map(item => ({
-      id: item.id || "",
-      name: item.nama || "",
-      date: item.tanggal ? item.tanggal.slice(0, 10) : "", // ✅ potong jadi YYYY-MM-DD
-      time: item.waktu || "",
-      status: item.status || "",
-      photo: item.foto || "",
-      timestamp: (item.tanggal && item.waktu)
-        ? `${item.tanggal.slice(0,10)}T${item.waktu}`
-        : ""
-    }));
+   window.absensiData = json.data.map(r => ({
+  name: r.nama || r.name,
+  date: normalizeDate(r.tanggal || r.date),
+  time: normalizeTime(r.waktu || r.time),
+  timestamp: r.timestamp || null,
+  status: r.status || "",
+}));
 
   } catch (err) {
-    alert("Gagal membaca data dari Spreadsheet!");
-    console.error("ERROR ambilAbsensi:", err);
-    window.absensiData = [];
+    console.error("FETCH ERROR:", err);
+    alert("Gagal membaca data dari Spreadsheet:\n" + err.message);
   }
 }
 
@@ -262,15 +289,19 @@
     }
 
     data.forEach((r, i) => {
-      const timeStr = r.timestamp ? formatTimeFromTimestamp(r.timestamp) : (r.time || "");
+      const timeStr = r.timestamp ? formatTimeFromTimestamp(r.timestamp) : normalizeTime(r.time);
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td class="border p-1">${i + 1}</td>
         <td class="border p-1">${escapeHtml(r.name)}</td>
         <td class="border p-1">${escapeHtml(r.date)}</td>
         <td class="border p-1">${escapeHtml(timeStr)}</td>
-        <td class="border p-1 ${r.status === "Hadir" ? "text-green-600" : "text-red-600"}">${escapeHtml(r.status)}</td>
-        <td class="border p-1">
+        <td class="border p-1 ${r.status === "Hadir" ? "text-green-600" : "text-red-600"}">
+  ${escapeHtml(r.status)}
+</td>
+<td class="border p-1">
+  ${r.photo ? `<img src="${escapeAttr(r.photo)}" data-photo="${escapeAttr(r.photo)}" class="w-16 h-16 rounded object-cover cursor-pointer"/>` : '-'}
+</td>
           ${r.photo ? `<img src="${escapeAttr(r.photo)}" data-photo="${escapeAttr(r.photo)}" class="w-16 h-16 rounded object-cover cursor-pointer"/>` : '-'}
         </td>
       `;
@@ -512,5 +543,3 @@
 
   </body>
   </html>
-
-
