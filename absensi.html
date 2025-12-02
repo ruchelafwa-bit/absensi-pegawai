@@ -106,6 +106,7 @@
     const video = document.getElementById("video");
     const snapBtn = document.getElementById("snapBtn");
     const confirmBtn = document.getElementById("confirmBtn");
+    confirmBtn.type = "button";
     const resetBtn = document.getElementById("resetBtn");
     const photoPreview = document.getElementById("photoPreview");
     const photoPreviewWrap = document.getElementById("photoPreviewWrap");
@@ -116,11 +117,15 @@
     const infoStatus = document.getElementById("infoStatus");
     const infoImg = document.getElementById("infoImg");
 
+    let daftarPegawai = [
+  "Budi Santoso",
+  "Ani Lestari",
+  "Rudi Hartono",
+  "Siti Aminah"
+];
+
     let localStream = null;
     let lastSnapshot = null;
-    let daftarPegawai = ["Budi Santoso", "Ani Lestari", "Rudi Hartono", "Siti Aminah"];
-
-
 
     // ✅ Coba ambil daftar pegawai dari file pegawai.json
     fetch("pegawai.json")
@@ -314,7 +319,7 @@ function kirimAbsensi(nama, status) {
     status: status
   };
 
-  fetch("https://script.google.com/macros/s/AKfycbxdl1WjqHh3EBOqSkc-DtE8X2AXRC-PXqBngAnbkU0Srv2_8dT6adKJgHr2YYX-OuXN/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbweZ6zlWyCNY_wHkdPhbP80138CADQglatV9GS684snF5ICydJf8eIUOlUNB7Mc9_7O/exec", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
