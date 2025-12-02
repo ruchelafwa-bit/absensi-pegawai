@@ -245,10 +245,11 @@
 
       try {
         const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  redirect: "follow",
+  body: JSON.stringify(payload)
+});
 
         if (!res.ok) {
           const txt = await res.text().catch(()=>"(no body)");
