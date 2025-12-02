@@ -299,11 +299,11 @@
       if (localStream) localStream.getTracks().forEach(t => t.stop());
     });
 
-    const API_URL = "https://script.google.com/macros/s/AKfycbzCRY6WgfvDsn0l5nD-SQdje1cJ_kSXjWWQ_T3o7y1qho_36rgt9RIxrcrY1ZqDEbih/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxdl1WjqHh3EBOqSkc-DtE8X2AXRC-PXqBngAnbkU0Srv2_8dT6adKJgHr2YYX-OuXN/exec";
 
 function kirimAbsensi(nama, status) {
   const now = new Date();
-  const id = Date.now(); // ID unik
+  const id = Date.now();
   const tanggal = now.toISOString().split("T")[0];
   const waktu = now.toLocaleTimeString("id-ID");
 
@@ -315,15 +315,19 @@ function kirimAbsensi(nama, status) {
     status: status
   };
 
-  fetch(API_URL, {
+  fetch("https://script.google.com/macros/s/AKfycbxdl1WjqHh3EBOqSkc-DtE8X2AXRC-PXqBngAnbkU0Srv2_8dT6adKJgHr2YYX-OuXN/exec", {
     method: "POST",
-    mode: "no-cors",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   })
-  .catch(err => console.error("ERROR:", err));
+  .then(res => res.json())
+  .then(data => {
+    console.log("Terkirim ke Google Sheets:", data);
+  })
+  .catch(err => {
+    console.error("Gagal kirim:", err);
+  });
 }
-
 
   </script>
 </body>
