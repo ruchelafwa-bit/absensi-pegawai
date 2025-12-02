@@ -191,12 +191,12 @@
       reader.readAsText(file);
     });
 
-    // ⏰ Update waktu realtime
-    function updateClock() {
-      nowDisplay.value = new Date().toLocaleString("id-ID");
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+function updateClock() {
+  const now = new Date();
+  nowDisplay.value = now.toLocaleDateString("id-ID") + " " + now.toLocaleTimeString("id-ID");
+}
+setInterval(updateClock, 1000);
+window.addEventListener("DOMContentLoaded", updateClock);
 
     // 🎥 Start kamera
     async function startCamera() {
@@ -242,6 +242,15 @@ function updateClock() {
 setInterval(updateClock, 1000);
 window.addEventListener("DOMContentLoaded", updateClock);
 
+function evaluateStatus(date) {
+  const hh = date.getHours();
+  const mm = date.getMinutes();
+
+  // Hadir: sebelum 08:00
+  if (hh < 8) return "Hadir";
+
+  return "Terlambat";
+}
 
  confirmBtn.onclick = async () => {
   const name = employeeName.value.trim();
@@ -304,20 +313,6 @@ window.addEventListener("DOMContentLoaded", updateClock);
     });
 
 const API_URL = "https://script.google.com/macros/s/AKfycbweZ6zlWyCNY_wHkdPhbP80138CADQglatV9GS684snF5ICydJf8eIUOlUNB7Mc9_7O/exec";
-
-function kirimAbsensi(nama, status) {
-  const now = new Date();
-  const id = Date.now();
-  const tanggal = now.toISOString().split("T")[0];
-  const waktu = now.toLocaleTimeString("id-ID");
-
-  const payload = {
-    id: id,
-    nama: nama,
-    tanggal: tanggal,
-    waktu: waktu,
-    status: status
-  };
 
   fetch("https://script.google.com/macros/s/AKfycbweZ6zlWyCNY_wHkdPhbP80138CADQglatV9GS684snF5ICydJf8eIUOlUNB7Mc9_7O/exec", {
     method: "POST",
