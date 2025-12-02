@@ -234,13 +234,6 @@ window.addEventListener("DOMContentLoaded", updateClock);
       photoPreview.src = "";
       successMsg.classList.add("hidden");
     };
-    
-function updateClock() {
-  const now = new Date();
-  nowDisplay.value = now.toLocaleDateString("id-ID") + " " + now.toLocaleTimeString("id-ID");
-}
-setInterval(updateClock, 1000);
-window.addEventListener("DOMContentLoaded", updateClock);
 
 function evaluateStatus(date) {
   const hh = date.getHours();
@@ -313,20 +306,6 @@ function evaluateStatus(date) {
     });
 
 const API_URL = "https://script.google.com/macros/s/AKfycbweZ6zlWyCNY_wHkdPhbP80138CADQglatV9GS684snF5ICydJf8eIUOlUNB7Mc9_7O/exec";
-
-  fetch("https://script.google.com/macros/s/AKfycbweZ6zlWyCNY_wHkdPhbP80138CADQglatV9GS684snF5ICydJf8eIUOlUNB7Mc9_7O/exec", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log("Terkirim ke Google Sheets:", data);
-  })
-  .catch(err => {
-    console.error("Gagal kirim:", err);
-  });
-}
 
   </script>
 </body>
