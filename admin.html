@@ -191,38 +191,39 @@ function formatTimeFromTimestamp(ts) {
 async function ambilAbsensi() {
   try {
     const res = await fetch(API_URL);
-    const rows = await res.json();
+    const result = await res.json();
 
-    window.absensiData = rows.map(r => ({
-      id: r.id,
-      name: r.nama,
-      date: r.tanggal,
-      time: r.waktu,
-      status: r.status,
-      timestamp: `${r.tanggal}T${r.waktu}`
+    console.log("RESPON API:", result); // DEBUG
+
+    if (!result.success || !Array.isArray(result.data)) {
+      throw new Error("Format data salah dari API");
+    }
+
+    const rows = result.data;
+
+    window.absensiData = rows.map(item => ({
+      id: item.id || item[0] || "",
+      name: item.nama || item.name || item[1] || "",
+      date: item.tanggal || item.date || item[2] || "",
+      time: item.waktu || item.time || item[3] || "",
+      status: item.status || item[4] || "",
+      photo: item.foto || item.photo || item[5] || "",
+      timestamp:
+        (item.tanggal && item.waktu)
+          ? `${item.tanggal}T${item.waktu}`
+          : (item.date && item.time)
+            ? `${item.date}T${item.time}`
+            : ""
     }));
+
+    console.log("DATA BERSIH:", window.absensiData);
 
   } catch (err) {
     alert("Gagal membaca data dari Spreadsheet!");
-    console.error(err);
+    console.error("ERROR ambilAbsensi:", err);
     window.absensiData = [];
   }
 }
-
-    // Normalisasi ke format internal yang dipakai UI:
-window.absensiData = rows.map(item => ({
-  id: item.id || item[0] || "",
-  name: item.nama || item.name || item[1] || "",
-  date: item.tanggal || item.date || item[2] || "",
-  time: item.waktu || item.time || item[3] || "",
-  status: item.status || item[4] || "",
-  photo: item.foto || item.photo || item[5] || "",
-  timestamp: (item.tanggal && item.waktu)
-              ? `${item.tanggal}T${item.waktu}`
-              : (item.date && item.time)
-                ? `${item.date}T${item.time}`
-                : ""
-}));
 
 async function simpanAbsensi(record) {
   try {
