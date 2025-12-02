@@ -193,10 +193,17 @@ function normalizeTime(timeStr) {
   return timeStr.replaceAll(".", ":");
 }
 
-// Anti UTC Shift
 function normalizeDate(dateStr) {
   if (!dateStr) return "";
-  return dateStr.split("T")[0]; // ambil yyyy-mm-dd saja
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+
+  // Pakai waktu lokal Indonesia
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 function formatTimeFromTimestamp(ts) {
