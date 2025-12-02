@@ -119,11 +119,6 @@
     let localStream = null;
     let lastSnapshot = null;
 
-    // ✅ Ambil daftar pegawai dari localStorage
-    let daftarPegawai = JSON.parse(localStorage.getItem("daftarPegawai")) || [
-      "Budi Santoso","Ani Lestari","Rudi Hartono","Siti Aminah"
-    ];
-
     // ✅ Coba ambil daftar pegawai dari file pegawai.json
     fetch("pegawai.json")
       .then(res => res.json())
@@ -177,8 +172,6 @@
           }
           if (Array.isArray(data)) {
             daftarPegawai = data;
-            localStorage.setItem("daftarPegawai", JSON.stringify(daftarPegawai));
-            renderPegawai(searchPegawai.value);
             alert("Daftar pegawai berhasil diperbarui!");
           } else {
             alert("Format file tidak valid!");
@@ -241,65 +234,61 @@
       return "Terlambat";
     }
 
-    confirmBtn.onclick = () => {
+  confirmBtn.onclick = async () => {
   const name = employeeName.value.trim();
   if (!name) return alert("Pilih nama pegawai!");
-  if (!daftarPegawai.includes(name)) {
-    return alert("Nama tidak terdaftar di sistem!");
-  }
   if (!lastSnapshot) return alert("Ambil foto dulu!");
 
   const now = new Date();
-  const today = now.toISOString().slice(0, 10);
-
-  const records = JSON.parse(localStorage.getItem("absensi")) || [];
-  const sudahAbsen = records.some(r => r.name === name && r.date === today);
-  if (sudahAbsen) {
-    return alert("Pegawai ini sudah absen hari ini!");
-  }
+  const tanggal = now.toISOString().slice(0, 10);
+  const waktu = now.toLocaleTimeString("id-ID");
+  const status = evaluateStatus(now);
 
   if (!confirm("Yakin ingin menyimpan absensi?")) return;
 
-  const status = evaluateStatus(now);
-
-  const record = {
+  const payload = {
     id: Date.now(),
-    name,
-    date: today,
-    timestamp: now.toISOString(),
-    status,
-    photo: lastSnapshot
+    nama: name,
+    tanggal: tanggal,
+    waktu: waktu,
+    status: status
   };
 
-  records.push(record);
-  localStorage.setItem("absensi", JSON.stringify(records));
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  // 🔥🔥🔥 BAGIAN TERPENTING — kirim ke Google Sheets
-  kirimAbsensi(name, status);
+    const result = await res.json();
+    if (!result.success) throw new Error(result.error);
 
-  infoName.textContent = name;
-  infoTime.textContent = now.toLocaleString("id-ID");
-  infoStatus.textContent = status;
-  infoStatus.className =
-    status === "Hadir"
-      ? "text-green-600 font-semibold"
-      : "text-red-600 font-semibold";
-  infoImg.src = record.photo;
+    infoName.textContent = name;
+    infoTime.textContent = now.toLocaleString("id-ID");
+    infoStatus.textContent = status;
+    infoStatus.className =
+      status === "Hadir" ? "text-green-600 font-semibold" : "text-red-600 font-semibold";
 
-  successMsg.textContent = `Absensi berhasil pada jam ${now.toLocaleTimeString("id-ID")}`;
-  successMsg.classList.remove("hidden");
-  setTimeout(() => successMsg.classList.add("hidden"), 5000);
+    successMsg.textContent = `Absensi berhasil pada ${waktu}`;
+    successMsg.classList.remove("hidden");
 
-  lastSnapshot = null;
-  photoPreviewWrap.classList.add("hidden");
-  photoPreview.src = "";
+    setTimeout(() => successMsg.classList.add("hidden"), 5000);
+
+    lastSnapshot = null;
+    photoPreviewWrap.classList.add("hidden");
+    photoPreview.src = "";
+
+  } catch (err) {
+    alert("Gagal mengirim ke server: " + err.message);
+  }
 };
 
     window.addEventListener("beforeunload", () => {
       if (localStream) localStream.getTracks().forEach(t => t.stop());
     });
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxdl1WjqHh3EBOqSkc-DtE8X2AXRC-PXqBngAnbkU0Srv2_8dT6adKJgHr2YYX-OuXN/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbweZ6zlWyCNY_wHkdPhbP80138CADQglatV9GS684snF5ICydJf8eIUOlUNB7Mc9_7O/exec";
 
 function kirimAbsensi(nama, status) {
   const now = new Date();
