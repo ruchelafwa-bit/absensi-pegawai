@@ -1,521 +1,325 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Panel Admin</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Absensi Kehadiran</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-cover bg-center min-h-screen" style="background-image: url('imigrasi.jpg');">
-  <div class="bg-white/90 min-h-screen">
-    <div class="max-w-7xl mx-auto p-4">
-
-      <!-- Header -->
-      <header class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-3">
-          <img src="logouptimi.png" alt="Logo" class="h-12 w-12 object-contain rounded" />
-          <h1 class="text-2xl font-bold text-blue-900">Panel Admin</h1>
-        </div>
-        <div class="flex gap-2">
-          <button id="exportBtn" class="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700">Export CSV</button>
-          <button id="exportExcelBtn" class="px-3 py-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">Export Excel</button>
-          <button id="logoutBtn" class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700">Logout</button>
-        </div>
-      </header>
-
-      <!-- Filter -->
-      <div class="mb-4 flex flex-wrap gap-3 items-end">
+<body class="bg-white font-sans">
+  <div class="max-w-7xl mx-auto p-4">
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-6">
+      <div class="flex items-center gap-3">
+        <img src="logouptimi.png" alt="Logo" class="h-16 w-16 object-contain rounded" />
         <div>
-          <label class="block text-sm">Filter Tanggal</label>
-          <input type="date" id="filterDate" class="border rounded p-1" />
-        </div>
-        <div>
-          <label class="block text-sm">Filter Bulan</label>
-          <input type="month" id="filterMonth" class="border rounded p-1" />
-        </div>
-        <div>
-          <label class="block text-sm">Nama Pegawai</label>
-          <input type="text" id="filterName" placeholder="Cari nama..." class="border rounded p-1" />
-        </div>
-        <div>
-          <label class="block text-sm">Dari Tanggal</label>
-          <input type="date" id="filterStart" class="border rounded p-1" />
-        </div>
-        <div>
-          <label class="block text-sm">Sampai Tanggal</label>
-          <input type="date" id="filterEnd" class="border rounded p-1" />
-        </div>
-
-        <button id="applyFilter" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Terapkan</button>
-        <button id="resetFilter" class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600">Reset</button>
-      </div>
-
-      <!-- Statistik Kehadiran -->
-      <div id="statsPanel" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="p-4 bg-green-100 rounded-xl shadow text-center">
-          <h3 class="text-lg font-bold text-green-700">Total Kehadiran</h3>
-          <p id="statTotal" class="text-3xl font-extrabold text-green-800">0</p>
-          <p id="statTanggal" class="text-sm text-gray-500"></p>
-        </div>
-        <div class="p-4 bg-blue-100 rounded-xl shadow text-center">
-          <h3 class="text-lg font-bold text-blue-700">Tepat Waktu</h3>
-          <p id="statHadir" class="text-3xl font-extrabold text-blue-800">0</p>
-          <p class="text-sm text-gray-500">Hadir 06:00–07:59</p>
-        </div>
-        <div class="p-4 bg-red-100 rounded-xl shadow text-center">
-          <h3 class="text-lg font-bold text-red-700">Terlambat</h3>
-          <p id="statTelat" class="text-3xl font-extrabold text-red-800">0</p>
-          <p class="text-sm text-gray-500">≥ 08:00</p>
+          <h1 class="text-2xl font-bold text-blue-900">Absensi Pegawai (06:00 – 08:00)</h1>
+          <p class="text-sm text-gray-600">
+            Status otomatis: <span class="font-semibold text-green-600">Hadir</span> (06:00–07:59) /
+            <span class="font-semibold text-red-600">Terlambat</span> (≥ 08:00)
+          </p>
         </div>
       </div>
+      <div class="flex gap-2">
+        <a href="login.html" class="px-4 py-2 rounded-lg bg-yellow-500 text-white font-semibold shadow hover:bg-yellow-600">Halaman Admin</a>
+        <label class="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold shadow hover:bg-blue-600 cursor-pointer">
+          Upload Pegawai
+          <input type="file" id="uploadPegawai" accept=".csv,.json" class="hidden" />
+        </label>
+      </div>
+    </header>
 
-      <!-- Tabel absensi -->
-      <div class="bg-white shadow rounded-xl p-6 mb-6">
-        <h2 class="text-lg font-semibold mb-4">Data Absensi</h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm border">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="p-2 border">#</th>
-                <th class="p-2 border">Nama</th>
-                <th class="p-2 border">Tanggal</th>
-                <th class="p-2 border">Waktu</th>
-                <th class="p-2 border">Status</th>
-                <th class="p-2 border">Foto</th>
-              </tr>
-            </thead>
-            <tbody id="absensiTable"></tbody>
-          </table>
+    <!-- Panel Absensi -->
+    <div class="relative shadow rounded-xl overflow-hidden">
+      <div class="absolute inset-0">
+        <img src="imigrasi.jpg" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-white/10"></div>
+      </div>
+
+      <div class="relative p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Form kiri -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Cari Pegawai</label>
+            <input id="searchPegawai" placeholder="Ketik untuk mencari..." class="mt-1 w-full border rounded-lg p-2" />
+
+            <label for="employeeName" class="block mt-4 text-sm font-medium text-gray-700">Nama Pegawai</label>
+            <select id="employeeName" class="mt-1 w-full border rounded-lg p-2">
+              <option value="">-- Pilih Pegawai --</option>
+            </select>
+
+            <div class="mt-4">
+              <label class="block text-sm font-medium text-gray-700">Tanggal & Waktu</label>
+              <input id="nowDisplay" readonly class="mt-1 w-full border rounded-lg p-2 bg-gray-100" />
+            </div>
+
+            <!-- Webcam -->
+            <div class="mt-4">
+              <label class="block text-sm font-medium text-gray-700">Webcam (Preview)</label>
+              <video id="video" autoplay playsinline class="w-full rounded-lg bg-black"></video>
+
+              <div class="flex mt-2 gap-2">
+                <button id="snapBtn" class="flex-1 bg-blue-600 text-white rounded-lg px-3 py-2">Ambil Foto</button>
+                <button id="resetBtn" class="flex-1 bg-gray-500 text-white rounded-lg px-3 py-2">Reset</button>
+              </div>
+            </div>
+
+            <div id="successMsg" class="hidden mt-4 p-3 bg-green-100 text-green-700 rounded border border-green-300"></div>
+          </div>
+
+          <!-- Info kanan -->
+          <div class="space-y-4">
+            <div class="bg-gray-50/90 p-4 rounded-lg shadow">
+              <h3 class="font-semibold text-gray-700">Informasi Absensi</h3>
+              <p class="text-sm text-gray-500">Data dikirim ke Google Sheets (server).</p>
+              <hr class="my-2" />
+              <p><strong>Nama:</strong> <span id="infoName">-</span></p>
+              <p><strong>Waktu:</strong> <span id="infoTime">-</span></p>
+              <p><strong>Status:</strong> <span id="infoStatus">-</span></p>
+              <img id="infoImg" class="mt-2 w-24 h-24 rounded-lg object-cover border" />
+
+              <div id="photoPreviewWrap" class="hidden mt-4">
+                <label class="block text-sm text-gray-700">Preview Foto</label>
+                <img id="photoPreview" class="w-full rounded-lg" />
+                <button id="confirmBtn" class="mt-3 w-full bg-green-600 text-white rounded-lg px-3 py-2">Konfirmasi</button>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </div>
-
-      <!-- Rekap Mingguan -->
-      <div class="bg-white shadow rounded-xl p-6 mb-6">
-        <h2 class="text-lg font-semibold mb-4">Rekap Mingguan</h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm border">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="p-2 border">Nama</th>
-                <th class="p-2 border">Hadir</th>
-                <th class="p-2 border">Terlambat</th>
-                <th class="p-2 border">Total</th>
-              </tr>
-            </thead>
-            <tbody id="rekapMingguan"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Rekap Bulanan -->
-      <div class="bg-white shadow rounded-xl p-6 mb-6">
-        <h2 class="text-lg font-semibold mb-4">Rekap Bulanan</h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm border">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="p-2 border">Nama</th>
-                <th class="p-2 border">Hadir</th>
-                <th class="p-2 border">Terlambat</th>
-                <th class="p-2 border">Total</th>
-              </tr>
-            </thead>
-            <tbody id="rekapBulanan"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Ranking Kehadiran -->
-      <div class="bg-white shadow rounded-xl p-6 mb-6">
-        <h2 class="text-lg font-semibold mb-4">Ranking Kehadiran</h2>
-        <ol id="rankingList" class="list-decimal list-inside space-y-1"></ol>
-      </div>
-
-      <!-- Grafik Kehadiran -->
-      <div class="bg-white shadow rounded-xl p-6 mt-6">
-        <h2 class="text-lg font-semibold mb-4">Grafik Kehadiran</h2>
-        <canvas id="chartMingguan" class="mb-6 max-h-64"></canvas>
-        <canvas id="chartBulanan" class="max-h-64"></canvas>
       </div>
     </div>
   </div>
 
-  <!-- Modal Foto -->
-  <div id="photoModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
-    <div class="bg-white p-4 rounded shadow max-w-lg">
-      <img id="modalImg" src="" class="max-h-[80vh] max-w-full rounded"/>
-      <button id="closeModal" class="mt-3 px-4 py-2 bg-red-600 text-white rounded">Tutup</button>
-    </div>
-  </div>
+  <script>
+    // ---------- KONFIG ----------
+    const API_URL = "https://script.google.com/macros/s/AKfycbzjrz-QRcqWa7OB2xY_V3OshwngI-zkQDQhH1JGqLJA4eThvp9-Chh5wGEOIVdy8URU/exec";
+    // ganti di atas kalau URL deploymu beda
 
-<script>
+    // ---------- DOM ----------
+    const searchPegawai = document.getElementById("searchPegawai");
+    const employeeName = document.getElementById("employeeName");
+    const uploadPegawai = document.getElementById("uploadPegawai");
+    const nowDisplay = document.getElementById("nowDisplay");
+    const video = document.getElementById("video");
+    const snapBtn = document.getElementById("snapBtn");
+    const confirmBtn = document.getElementById("confirmBtn");
+    confirmBtn.type = "button";
+    const resetBtn = document.getElementById("resetBtn");
+    const photoPreview = document.getElementById("photoPreview");
+    const photoPreviewWrap = document.getElementById("photoPreviewWrap");
+    const successMsg = document.getElementById("successMsg");
+    const infoName = document.getElementById("infoName");
+    const infoTime = document.getElementById("infoTime");
+    const infoStatus = document.getElementById("infoStatus");
+    const infoImg = document.getElementById("infoImg");
 
+    // ---------- STATE ----------
+    let daftarPegawai = ["Budi Santoso","Ani Lestari","Rudi Hartono","Siti Aminah"];
+    let localStream = null;
+    let lastSnapshot = null;
 
-/* ----------- Konfigurasi ----------- */
-const API_URL = "https://script.google.com/macros/s/AKfycbzjrz-QRcqWa7OB2xY_V3OshwngI-zkQDQhH1JGqLJA4eThvp9-Chh5wGEOIVdy8URU/exec";
+    // ---------- UTILS ----------
+    function updateClock() {
+      const now = new Date();
+      nowDisplay.value = now.toLocaleDateString("id-ID") + " " + now.toLocaleTimeString("id-ID");
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-/* ----------- Elemen DOM ----------- */
-const absensiTable = document.getElementById("absensiTable");
-const rankingList = document.getElementById("rankingList");
-const filterDate = document.getElementById("filterDate");
-const filterMonth = document.getElementById("filterMonth");
-const filterName = document.getElementById("filterName");
-const filterStart = document.getElementById("filterStart");
-const filterEnd = document.getElementById("filterEnd");
-const applyFilterBtn = document.getElementById("applyFilter");
-const resetFilterBtn = document.getElementById("resetFilter");
-const exportBtn = document.getElementById("exportBtn");
-const exportExcelBtn = document.getElementById("exportExcelBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const photoModal = document.getElementById("photoModal");
-const modalImg = document.getElementById("modalImg");
-const closeModalBtn = document.getElementById("closeModal");
+    function evaluateStatus(date) {
+      const hh = date.getHours();
+      // hadir sebelum 08:00
+      if (hh < 8) return "Hadir";
+      return "Terlambat";
+    }
 
-/* ----------- State ----------- */
-window.absensiData = []; // semua data yang diambil dari sheet
-let filteredData = [];    // data setelah filter (digunakan utk render)
+    function renderPegawai(filter = "") {
+      employeeName.innerHTML = `<option value="">-- Pilih Pegawai --</option>`;
+      daftarPegawai
+        .filter(nama => nama.toLowerCase().includes(filter.toLowerCase()))
+        .forEach(nama => {
+          const opt = document.createElement("option");
+          opt.value = nama;
+          opt.textContent = nama;
+          employeeName.appendChild(opt);
+        });
+    }
 
-/* ----------- Helper ----------- */
-function getToday() {
-  return new Date().toISOString().slice(0,10);
-}
-function formatTimeFromTimestamp(ts) {
-  try {
-    return new Date(ts).toLocaleTimeString("id-ID");
-  } catch(e) { return ts || ""; }
-}
-
-/* ----------- API: Ambil & Simpan ----------- */
-async function ambilAbsensi() {
-  try {
-    const res = await fetch(API_URL);
-    const rows = await res.json();
-
-    window.absensiData = rows.map(r => ({
-      id: r.id,
-      name: r.nama,
-      date: r.tanggal,
-      time: r.waktu,
-      status: r.status,
-      timestamp: `${r.tanggal}T${r.waktu}`
-    }));
-
-  } catch (err) {
-    alert("Gagal membaca data dari Spreadsheet!");
-    console.error(err);
-    window.absensiData = [];
-  }
-}
-
-    // Normalisasi ke format internal yang dipakai UI:
-window.absensiData = rows.map(item => ({
-  id: item.id || item[0] || "",
-  name: item.nama || item.name || item[1] || "",
-  date: item.tanggal || item.date || item[2] || "",
-  time: item.waktu || item.time || item[3] || "",
-  status: item.status || item[4] || "",
-  photo: item.foto || item.photo || item[5] || "",
-  timestamp: (item.tanggal && item.waktu)
-              ? `${item.tanggal}T${item.waktu}`
-              : (item.date && item.time)
-                ? `${item.date}T${item.time}`
-                : ""
-}));
-
-async function simpanAbsensi(record) {
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nama: record.name,
-        tanggal: record.date,
-        waktu: record.time,
-        status: record.status || ""
+    // ---------- INIT: coba load pegawai dari file ----------
+    fetch("pegawai.json")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data.pegawai)) {
+          daftarPegawai = data.pegawai;
+          renderPegawai();
+        }
       })
+      .catch(()=>{/* ignore jika tidak ada file */});
+
+    renderPegawai();
+
+    // ---------- filter input ----------
+    searchPegawai.addEventListener("input", e => {
+      renderPegawai(e.target.value);
+      const options = employeeName.querySelectorAll("option");
+      if (options.length === 2) employeeName.value = options[1].value;
     });
 
-    // Periksa respons server
-    if (!res.ok) {
-      const text = await res.text().catch(()=>"");
-      throw new Error(`HTTP ${res.status} - ${text}`);
+    // ---------- upload pegawai ----------
+    uploadPegawai.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          let data;
+          if (file.name.endsWith(".json")) {
+            data = JSON.parse(ev.target.result).pegawai || JSON.parse(ev.target.result);
+          } else {
+            data = ev.target.result.split("\n").map(l => l.trim()).filter(Boolean);
+          }
+          if (Array.isArray(data)) {
+            daftarPegawai = data;
+            renderPegawai();
+            alert("Daftar pegawai berhasil diperbarui!");
+          } else {
+            alert("Format file tidak valid!");
+          }
+        } catch (err) {
+          alert("Gagal membaca file: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // ---------- kamera ----------
+    async function startCamera() {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        video.srcObject = localStream;
+      } catch (e) {
+        alert("Gagal akses kamera: " + e.message);
+      }
     }
+    startCamera();
 
-    // coba parse respons JSON bila ada (beberapa Apps Script mengembalikan JSON)
-    const txt = await res.text();
-    try {
-      const j = txt ? JSON.parse(txt) : null;
-      console.log("RESPON SIMPAN:", j);
-    } catch (e) {
-      console.log("RESPON SIMPAN (non-json):", txt);
-    }
+   snapBtn.addEventListener("click", () => {
+  if (!localStream) return alert("Kamera belum aktif.");
+  if (!employeeName.value) return alert("Pilih nama dulu!");
 
-    // refresh data setelah simpan
-    await ambilAbsensi();
-    applyCurrentFilter(); // refresh view
-  } catch (err) {
-    console.error("Gagal simpan ke Sheet:", err);
-    alert("Gagal menyimpan ke Google Sheets. Cek console untuk detail.");
-  }
-}
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-/* ----------- Render functions (1x each) ----------- */
-function renderTable(data) {
-  absensiTable.innerHTML = "";
-  if (!data || data.length === 0) {
-    absensiTable.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-gray-500 italic">Belum ada data absensi</td></tr>`;
-    return;
-  }
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+  lastSnapshot = dataUrl;
 
-  data.forEach((r, i) => {
-    const timeStr = r.timestamp ? formatTimeFromTimestamp(r.timestamp) : (r.time || "");
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="border p-1">${i + 1}</td>
-      <td class="border p-1">${escapeHtml(r.name)}</td>
-      <td class="border p-1">${escapeHtml(r.date)}</td>
-      <td class="border p-1">${escapeHtml(timeStr)}</td>
-      <td class="border p-1 ${r.status === "Hadir" ? "text-green-600" : "text-red-600"}">${escapeHtml(r.status)}</td>
-      <td class="border p-1">
-        ${r.photo ? `<img src="${escapeAttr(r.photo)}" data-photo="${escapeAttr(r.photo)}" class="w-16 h-16 rounded object-cover cursor-pointer"/>` : '-'}
-      </td>
-    `;
-    absensiTable.appendChild(tr);
-  });
+  const now = new Date();
+infoName.textContent = employeeName.value || "-";
+infoTime.textContent = now.toLocaleString("id-ID");
+infoStatus.textContent = evaluateStatus(now);
+infoStatus.className =
+  evaluateStatus(now) === "Hadir"
+    ? "text-green-600 font-semibold"
+    : "text-red-600 font-semibold";
 
-  // photo modal
-  document.querySelectorAll("[data-photo]").forEach(img => {
-    img.onclick = () => {
-      modalImg.src = img.dataset.photo;
-      photoModal.classList.remove("hidden");
-      photoModal.classList.add("flex");
-    };
-  });
-}
+infoImg.src = dataUrl;
 
-function renderRanking(data) {
-  const hadirCounts = {};
-  data.forEach(r => {
-    if (r.status === "Hadir") {
-      hadirCounts[r.name] = (hadirCounts[r.name] || 0) + 1;
-    }
-  });
-  const ranking = Object.entries(hadirCounts).sort((a,b)=> b[1] - a[1]);
-  rankingList.innerHTML = "";
-  if (ranking.length === 0) {
-    rankingList.innerHTML = `<li class="text-gray-500 italic">Belum ada ranking</li>`;
-    return;
-  }
-  ranking.forEach(([name,count], idx) => {
-    let medal = "";
-    if (idx===0) medal="🥇 ";
-    else if (idx===1) medal="🥈 ";
-    else if (idx===2) medal="🥉 ";
-    const li = document.createElement("li");
-    li.textContent = `${medal}${name} - ${count}x Hadir`;
-    rankingList.appendChild(li);
-  });
-}
 
-function renderStats(data, label="") {
-  document.getElementById("statTanggal").textContent = label;
-  const total = data.length;
-  const hadir = data.filter(r => r.status === "Hadir").length;
-  const telat = data.filter(r => r.status === "Terlambat").length;
-  document.getElementById("statTotal").textContent = total;
-  document.getElementById("statHadir").textContent = hadir;
-  document.getElementById("statTelat").textContent = telat;
-}
+  // ✅ TAMPILKAN PREVIEW FOTO
+  photoPreview.src = dataUrl;
+  photoPreviewWrap.classList.remove("hidden");
 
-function renderRekap(records, targetId) {
-  const counts = {};
-  records.forEach(r => {
-    if (!counts[r.name]) counts[r.name] = { hadir:0, telat:0 };
-    if (r.status === "Hadir") counts[r.name].hadir++;
-    if (r.status === "Terlambat") counts[r.name].telat++;
-  });
-  const tbody = document.getElementById(targetId);
-  tbody.innerHTML = "";
-  Object.entries(counts).forEach(([name,data])=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="border p-1">${escapeHtml(name)}</td>
-      <td class="border p-1 text-green-600">${data.hadir}</td>
-      <td class="border p-1 text-red-600">${data.telat}</td>
-      <td class="border p-1 font-bold">${data.hadir + data.telat}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-let weekChart = null;
-let monthChart = null;
-function renderCharts(records) {
-  if (weekChart) weekChart.destroy();
-  if (monthChart) monthChart.destroy();
-
-  const dailyCounts = {};
-  records.forEach(r => {
-    dailyCounts[r.date] = (dailyCounts[r.date] || 0) + 1;
-  });
-
-  const labels = Object.keys(dailyCounts).sort();
-  const values = labels.map(l => dailyCounts[l]);
-
-  const ctxWeek = document.getElementById("chartMingguan").getContext("2d");
-  weekChart = new Chart(ctxWeek, {
-    type: "bar",
-    data: { labels, datasets: [{ label: "Jumlah Kehadiran", data: values }] },
-    options: { responsive:true, maintainAspectRatio:false }
-  });
-
-  const hadir = records.filter(r=> r.status==="Hadir").length;
-  const telat = records.filter(r=> r.status==="Terlambat").length;
-  const ctxMonth = document.getElementById("chartBulanan").getContext("2d");
-  monthChart = new Chart(ctxMonth, {
-    type: "doughnut",
-    data: { labels: ["Tepat Waktu","Terlambat"], datasets: [{ data: [hadir, telat] }] },
-    options: { responsive:true, maintainAspectRatio:false }
-  });
-}
-
-/* ----------- Filters & helpers ----------- */
-function applyCurrentFilter() {
-  // derive filteredData from window.absensiData and UI fields
-  let records = (window.absensiData || []).slice();
-
-  const name = (filterName.value || "").trim().toLowerCase();
-  if (name) {
-    records = records.filter(r => (r.name || "").toLowerCase().includes(name));
-  }
-
-  const start = filterStart.value;
-  const end = filterEnd.value;
-  if (start && end) {
-    records = records.filter(r => r.date >= start && r.date <= end);
-  } else if (filterMonth.value) {
-    const [y,m] = filterMonth.value.split("-");
-    records = records.filter(r => (r.date || "").startsWith(`${y}-${m}`));
-  } else if (filterDate.value) {
-    records = records.filter(r => r.date === filterDate.value);
-  } else {
-    // default: today
-    const today = getToday();
-    records = records.filter(r => r.date === today);
-  }
-
-  filteredData = records;
-  // update UI
-  const label = (start && end) ? `Dari ${new Date(start).toLocaleDateString("id-ID")} s/d ${new Date(end).toLocaleDateString("id-ID")}` :
-                (filterMonth.value ? `Bulan ${filterMonth.value.split("-")[1]}/${filterMonth.value.split("-")[0]}` :
-                (filterDate.value ? new Date(filterDate.value).toLocaleDateString("id-ID") : "Hari ini"));
-
-  renderTable(filteredData);
-  renderRanking(filteredData);
-  renderStats(filteredData, label);
-  renderRekap(filteredData, "rekapMingguan");
-  renderRekap(filteredData, "rekapBulanan");
-  renderCharts(filteredData);
-}
-
-/* ----------- Export ----------- */
-exportBtn.onclick = () => {
-  const records = filteredData.length ? filteredData : (window.absensiData || []);
-  if (!records.length) return alert("Belum ada data absensi!");
-  const header = ["Nama","Tanggal","Waktu","Status"];
-  const rows = records.map(r => {
-    const timeStr = r.timestamp ? formatTimeFromTimestamp(r.timestamp) : (r.time || "");
-    return [r.name, r.date, timeStr, r.status];
-  });
-  function quoteCsvField(f) {
-  if (f === undefined || f === null) return '""';
-  const s = String(f).replace(/"/g, '""');
-  return `"${s}"`;
-}
-const csvRows = [header, ...rows].map(row => row.map(quoteCsvField).join(","));
-const csvContent = csvRows.join("\n");
-
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `absensi_${new Date().toISOString().slice(0,10)}.csv`;
-  link.click();
-};
-
-exportExcelBtn.onclick = () => {
-  const records = filteredData.length ? filteredData : (window.absensiData || []);
-  if (!records.length) return alert("Belum ada data absensi!");
-  const worksheetData = records.map(r => ({
-    Nama: r.name,
-    Tanggal: r.date,
-    Waktu: r.timestamp ? formatTimeFromTimestamp(r.timestamp) : (r.time || ""),
-    Status: r.status
-  }));
-  const ws = XLSX.utils.json_to_sheet(worksheetData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Absensi");
-  XLSX.writeFile(wb, `absensi_${new Date().toISOString().slice(0,10)}.xlsx`);
-};
-
-/* ----------- Modal / UI events ----------- */
-closeModalBtn.onclick = () => {
-  photoModal.classList.add("hidden");
-  photoModal.classList.remove("flex");
-};
-logoutBtn.onclick = () => {
-  sessionStorage.removeItem("isAdmin");
-  window.location.href = "login.html";
-};
-
-/* Filter buttons */
-applyFilterBtn.onclick = () => applyCurrentFilter();
-resetFilterBtn.onclick = () => {
-  filterDate.value = "";
-  filterMonth.value = "";
-  filterName.value = "";
-  filterStart.value = "";
-  filterEnd.value = "";
-  filterDate.value = getToday();
-  applyCurrentFilter();
-};
-
-/* escape helpers to avoid injection */
-function escapeHtml(s) {
-  if (s === undefined || s === null) return "";
-  return String(s).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
-}
-function escapeAttr(s) {
-  if (s === undefined || s === null) return "";
-  return String(s).replace(/"/g, '&quot;');
-}
-
-/* ----------- Init application (async safe) ----------- */
-async function initApp() {
-  // simple auth-check (as in original)
-  if (sessionStorage.getItem("isAdmin") !== "true") {
-    window.location.href = "login.html";
-    return;
-  }
-
-  filterDate.value = getToday();
-
-  await ambilAbsensi();
-  applyCurrentFilter(); // will render everything based on default filter (today)
-
-  // make charts responsive height
-  document.getElementById("chartMingguan").style.height = "240px";
-  document.getElementById("chartBulanan").style.height = "240px";
-}
-
-// start when DOM ready
-window.addEventListener("DOMContentLoaded", () => {
-  initApp().catch(err => console.error(err));
+  infoName.textContent = employeeName.value;
+  infoTime.textContent = now.toLocaleString("id-ID");
+  infoStatus.textContent = status;
+  infoStatus.className = status === "Hadir"
+    ? "text-green-600 font-semibold"
+    : "text-red-600 font-semibold";
+  infoImg.src = dataUrl;
 });
 
-</script>
 
+    resetBtn.addEventListener("click", () => {
+      employeeName.value = "";
+      searchPegawai.value = "";
+      renderPegawai();
+      lastSnapshot = null;
+      photoPreviewWrap.classList.add("hidden");
+      photoPreview.src = "";
+      successMsg.classList.add("hidden");
+    });
+
+    // ---------- konfirmasi (kirim ke Apps Script) ----------
+    confirmBtn.addEventListener("click", async () => {
+      const name = employeeName.value.trim();
+      if (!name) return alert("Pilih nama pegawai!");
+      if (!lastSnapshot) return alert("Ambil foto dulu!");
+
+      const now = new Date();
+      const payload = {
+        id: Date.now(),
+        nama: name,
+        tanggal: now.toISOString().slice(0, 10),
+        waktu: now.toLocaleTimeString("id-ID"),
+        status: evaluateStatus(now),
+        // foto: lastSnapshot   // <-- uncomment kalau Apps Script siap simpan base64 (opsional)
+      };
+
+      try {
+     const formData = new URLSearchParams();
+formData.append("id", Date.now());
+formData.append("nama", name);
+formData.append("tanggal", now.toISOString().slice(0, 10));
+formData.append("waktu", now.toLocaleTimeString("id-ID"));
+formData.append("status", evaluateStatus(now));
+
+const res = await fetch(API_URL, {
+  method: "POST",
+  body: formData
+});
+
+
+        if (!res.ok) {
+          const txt = await res.text().catch(()=>"(no body)");
+          throw new Error(`HTTP ${res.status} - ${txt}`);
+        }
+
+        const result = await res.json().catch(()=>null);
+        // beberapa Apps Script mengembalikan plain text; terima juga []
+        if (result && result.success === false) {
+          throw new Error(result.error || "Server menolak menyimpan data");
+        }
+
+        // update UI kanan
+        infoName.textContent = name;
+        infoTime.textContent = now.toLocaleString("id-ID");
+        infoStatus.textContent = payload.status;
+        infoStatus.className = payload.status === "Hadir" ? "text-green-600 font-semibold" : "text-red-600 font-semibold";
+        infoImg.src = lastSnapshot;
+
+        successMsg.textContent = `Absensi berhasil pada ${now.toLocaleTimeString("id-ID")}`;
+        successMsg.classList.remove("hidden");
+        setTimeout(()=> successMsg.classList.add("hidden"), 4000);
+
+        // reset preview
+        lastSnapshot = null;
+        photoPreviewWrap.classList.add("hidden");
+        photoPreview.src = "";
+
+      } catch (err) {
+        console.error("KIRIM ERROR:", err);
+        alert("Gagal mengirim ke server: " + err.message);
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      if (localStream) localStream.getTracks().forEach(t => t.stop());
+    });
+  </script>
 </body>
 </html>
+
