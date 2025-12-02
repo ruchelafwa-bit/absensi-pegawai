@@ -154,7 +154,7 @@
 
 
 /* ----------- Konfigurasi ----------- */
-const API_URL = "https://script.google.com/macros/s/AKfycbxdl1WjqHh3EBOqSkc-DtE8X2AXRC-PXqBngAnbkU0Srv2_8dT6adKJgHr2YYX-OuXN/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbweZ6zlWyCNY_wHkdPhbP80138CADQglatV9GS684snF5ICydJf8eIUOlUNB7Mc9_7O/exec";
 
 /* ----------- Elemen DOM ----------- */
 const absensiTable = document.getElementById("absensiTable");
@@ -191,34 +191,23 @@ function formatTimeFromTimestamp(ts) {
 async function ambilAbsensi() {
   try {
     const res = await fetch(API_URL);
-    const data = await res.json();
+    const rows = await res.json();
 
-    // API bisa mengembalikan:
-    // - array objek: [{id,nama,tanggal,waktu,status},...]
-    // - atau { values: [...] } (jika pakai mode lain)
-    let rows = [];
-    if (Array.isArray(data)) {
-      rows = data;
-    } else if (data && Array.isArray(data.values)) {
-      // data.values: header + rows
-      const values = data.values;
-      const header = values[0] || [];
-      for (let i = 1; i < values.length; i++) {
-        const r = values[i];
-        rows.push({
-          id: r[0],
-          nama: r[1],
-          tanggal: r[2],
-          waktu: r[3],
-          status: r[4]
-        });
-      }
-    } else if (data && data.length === 0) {
-      rows = [];
-    } else {
-      // fallback: if object with numeric keys
-      rows = Array.isArray(data) ? data : [];
-    }
+    window.absensiData = rows.map(r => ({
+      id: r.id,
+      name: r.nama,
+      date: r.tanggal,
+      time: r.waktu,
+      status: r.status,
+      timestamp: `${r.tanggal}T${r.waktu}`
+    }));
+
+  } catch (err) {
+    alert("Gagal membaca data dari Spreadsheet!");
+    console.error(err);
+    window.absensiData = [];
+  }
+}
 
     // Normalisasi ke format internal yang dipakai UI:
 window.absensiData = rows.map(item => ({
@@ -234,16 +223,6 @@ window.absensiData = rows.map(item => ({
                 ? `${item.date}T${item.time}`
                 : ""
 }));
-
-
-
-    return window.absensiData;
-  } catch (err) {
-    console.error("Gagal ambil data dari Sheet:", err);
-    window.absensiData = [];
-    return [];
-  }
-}
 
 async function simpanAbsensi(record) {
   try {
