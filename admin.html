@@ -200,11 +200,12 @@ function normalizeDate(dateStr) {
 }
 
 function formatTimeFromTimestamp(ts) {
-  try {
-    return new Date(ts).toLocaleTimeString("id-ID");
-  } catch (e) {
-    return ts || "";
+  if (!ts) return "";
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) {
+    return ts; // kalau bukan timestamp valid, tampilkan apa adanya dari sheet
   }
+  return d.toLocaleTimeString("id-ID");
 }
 
   /* ----------- API: Ambil & Simpan ----------- */
@@ -289,7 +290,9 @@ function formatTimeFromTimestamp(ts) {
     }
 
     data.forEach((r, i) => {
-      const timeStr = r.timestamp ? formatTimeFromTimestamp(r.timestamp) : normalizeTime(r.time);
+      const timeStr = r.time
+  ? normalizeTime(r.time)
+  : (r.timestamp ? formatTimeFromTimestamp(r.timestamp) : "-");
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td class="border p-1">${i + 1}</td>
