@@ -93,7 +93,7 @@
 
   <script>
     // ---------- KONFIG ----------
-    const API_URL = "https://script.google.com/macros/s/AKfycbynzlEADUqhIzQpXpEEN387oriTahKK_RAziDG08V1v4vTj4PSmwOEMkoGgS_kedWVH/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycby0ddsYAMInPtJeY-BXVeaY6NNt5ELccq2QnFHoMe9A9Tijq3HcSEeFvnwM4tRobhsZ/exec";
     // ganti di atas kalau URL deploymu beda
 
     // ---------- DOM ----------
@@ -279,7 +279,12 @@ const res = await fetch(API_URL, {
           throw new Error(`HTTP ${res.status} - ${txt}`);
         }
 
-        const result = await res.text();
+        const result = await res.json();
+
+if (!result.success) {
+  alert(result.message || "Absensi ditolak");
+  return;
+}
         console.log("RESPON SERVER:", result);
         // beberapa Apps Script mengembalikan plain text; terima juga []
         if (!result.includes("success")) {
@@ -314,6 +319,7 @@ const res = await fetch(API_URL, {
   </script>
 </body>
 </html>
+
 
 
 
