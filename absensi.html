@@ -278,13 +278,13 @@ const res = await fetch(API_URL, {
           const txt = await res.text().catch(()=>"(no body)");
           throw new Error(`HTTP ${res.status} - ${txt}`);
         }
+const result = await res.json();
+console.log("RESPON SERVER:", result);
 
-        const result = await res.json();
-        console.log("RESPON SERVER:", result);
-        // beberapa Apps Script mengembalikan plain text; terima juga []
-        if (!result.includes("success")) {
-        console.warn("Server reply:", result);
-         }
+if (!result.success) {
+  alert(result.message || "Absensi ditolak");
+  return;
+}
 
         // update UI kanan
         infoName.textContent = name;
@@ -314,6 +314,7 @@ const res = await fetch(API_URL, {
   </script>
 </body>
 </html>
+
 
 
 
