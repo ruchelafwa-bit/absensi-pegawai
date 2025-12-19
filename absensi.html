@@ -92,6 +92,9 @@
   </div>
 
   <script>
+      if (sessionStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "index.html";
+  }
     // ---------- KONFIG ----------
     const API_URL = "https://script.google.com/macros/s/AKfycby0ddsYAMInPtJeY-BXVeaY6NNt5ELccq2QnFHoMe9A9Tijq3HcSEeFvnwM4tRobhsZ/exec";
     // ganti di atas kalau URL deploymu beda
@@ -314,6 +317,7 @@ if (!result.success) {
   </script>
 </body>
 </html>
+
 
 
 
