@@ -54,25 +54,25 @@
     </p>
   </div>
 
-  <script>
-    const loginBtn = document.getElementById("loginBtn");
-    const username = document.getElementById("username");
-    const password = document.getElementById("password");
-    const errorMsg = document.getElementById("errorMsg");
+<script>
+  const loginBtn = document.getElementById("loginBtn");
+  const username = document.getElementById("username");
+  const password = document.getElementById("password");
+  const errorMsg = document.getElementById("errorMsg");
 
-    // Akun default
-    const adminUser = "admin";
-    const adminPass = "123";
+  const adminUser = "Adminabsen";
+  const adminPass = "Absen2025";
 
-    loginBtn.addEventListener("click", () => {
-      if (username.value === adminUser && password.value === adminPass) {
-        localStorage.setItem("isLoggedIn", "true");
-        window.location.href = "absensi.html";
-      } else {
-        errorMsg.classList.remove("hidden");
-      }
-    });
-  </script>
+  loginBtn.addEventListener("click", () => {
+    if (username.value === adminUser && password.value === adminPass) {
+      sessionStorage.setItem("isLoggedIn", "true"); // 🔑 IZIN MASUK
+      window.location.href = "absensi.html";
+    } else {
+      errorMsg.classList.remove("hidden");
+    }
+  });
+</script>
+
 
   <!-- Animasi Tailwind -->
   <style>
@@ -86,3 +86,4 @@
   </style>
 </body>
 </html>
+
