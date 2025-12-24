@@ -632,6 +632,7 @@ function renderTable(data) {
   });
 }
 
+/* ----------- Render Ranking TERBAIK (SEMUA DATA) ----------- */
 function renderRanking() {
   // Gunakan SEMUA data, bukan data yang difilter
   const allData = window.absensiData || [];
@@ -670,6 +671,16 @@ function renderRanking() {
     }
   });
 
+  // Hitung skor untuk ranking
+  // Prioritas: 1. Jumlah kehadiran tepat waktu, 2. Waktu check-in tercepat
+  const ranking = Object.entries(pegawaiStats)
+    .map(([name, stats]) => ({
+      name,
+      ...stats,
+      // Skor: totalHadir * 1000 - waktuTercepat (semakin banyak hadir & semakin cepat = skor tinggi)
+      score: (stats.totalHadir * 10000) - stats.waktuTercepat
+    }))
+    .sort((a, b) => b.score - a.score);
   // Hitung skor untuk ranking
   // Prioritas: 1. Jumlah kehadiran tepat waktu, 2. Waktu check-in tercepat
   const ranking = Object.entries(pegawaiStats)
@@ -1018,4 +1029,5 @@ window.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html> 
+
 
