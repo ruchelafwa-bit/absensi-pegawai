@@ -957,10 +957,10 @@ function renderStats(data, label = "") {
   const hadir = data.filter(r => r.status === "Hadir").length;
   const telat = data.filter(r => r.status === "Terlambat").length;
   
-  // Animasi counter
-  animateValue("statTotal", 0, total, 800);
-  animateValue("statHadir", 0, hadir, 800);
-  animateValue("statTelat", 0, telat, 800);
+  // Langsung tampilkan angka tanpa animasi (fix lag & minus)
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statHadir").textContent = hadir;
+  document.getElementById("statTelat").textContent = telat;
 }
 
 function animateValue(id, start, end, duration) {
@@ -1228,3 +1228,4 @@ window.addEventListener("DOMContentLoaded", () => {
 </script>
   </body>
   </html> 
+
