@@ -583,13 +583,16 @@ async function ambilAbsensi() {
       throw new Error("Format API tidak valid");
     }
 
-    window.absensiData = json.data.map(r => ({
-      name: r.nama || r.name,
-      date: normalizeDate(r.tanggal || r.date),
-      time: normalizeTime(r.waktu || r.time),
-      timestamp: r.timestamp || null,
-      status: r.status || "",
-    }));
+    window.absensiData = json.data
+      .map(r => ({
+        name: r.nama || r.name || "",
+        date: normalizeDate(r.tanggal || r.date),
+        time: normalizeTime(r.waktu || r.time),
+        timestamp: r.timestamp || null,
+        status: r.status || "",
+        photo: r.photo || r.foto || ""
+      }))
+      .filter(r => r.name && r.name.trim() !== ""); // Filter data dengan nama kosong
 
     console.log("Data berhasil dimuat:", window.absensiData.length, "records");
   } catch (err) {
@@ -645,7 +648,7 @@ function renderTable(data) {
   });
 }
 
-/* ----------- Render Ranking LENGKAP dengan Rata-rata ----------- */
+/* ----------- Render Ranking PERBAIKAN ----------- */
 function renderRanking() {
   const allData = window.absensiData || [];
   
@@ -664,6 +667,8 @@ function renderRanking() {
   const pegawaiStats = {};
   
   allData.forEach(r => {
+    if (!r.name || r.name.trim() === "") return; // Skip data tanpa nama
+    
     if (!pegawaiStats[r.name]) {
       pegawaiStats[r.name] = {
         totalHadir: 0,
@@ -721,13 +726,13 @@ function renderRanking() {
         totalHadir: stats.totalHadir,
         totalTerlambat: stats.totalTerlambat,
         totalKehadiran: stats.totalKehadiran,
-        waktuTercepat: stats.waktuTercepatStr,
+        waktuTercepat: stats.waktuTercepatStr || "-",
         waktuTercepatDetik: stats.waktuTercepat,
         rataRataWaktu: secondsToTime(rataRataDetik),
         rataRataDetik: rataRataDetik,
         daftarWaktu: stats.daftarWaktu,
-        // Scoring: prioritas rata-rata tercepat, lalu total hadir
-        score: (1000000 - rataRataDetik) * 100 + stats.totalHadir
+        // Scoring: prioritas jumlah hadir tertinggi, lalu rata-rata tercepat
+        score: (stats.totalHadir * 1000000) + (1000000 - rataRataDetik)
       };
     })
     .sort((a, b) => b.score - a.score);
@@ -978,6 +983,7 @@ function animateValue(id, start, end, duration) {
 function renderRekap(records, targetId) {
   const counts = {};
   records.forEach(r => {
+    if (!r.name || r.name.trim() === "") return; // Skip data tanpa nama
     if (!counts[r.name]) counts[r.name] = { hadir: 0, telat: 0 };
     if (r.status === "Hadir") counts[r.name].hadir++;
     if (r.status === "Terlambat") counts[r.name].telat++;
@@ -1222,7 +1228,3 @@ window.addEventListener("DOMContentLoaded", () => {
 </script>
   </body>
   </html> 
-  
-  
-  
-  
